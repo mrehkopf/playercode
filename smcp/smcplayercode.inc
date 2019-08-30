@@ -1018,8 +1018,7 @@ transBrrData:
 	;余り(1か2)バイトがあれば転送する
 	lda BRR_REST_BYTES
 	beq @noRestBytes
-	cmp #01
-	beq +
+@restBytesLoop:
 	lda brrregion,y
 	iny
 	sta $2141
@@ -1034,22 +1033,9 @@ transBrrData:
 	bne -
 	eor #$01
 	sta P0STATE
-+
-	lda brrregion,y
-	iny
-	sta $2141
-	lda BRR_END_ADDR
-	ina
-	sta $2142
-	lda BRR_END_ADDR+1
-	sta $2143
-	lda P0STATE
-	sta $2140
--
-	cmp $2140
-	bne -
-	eor #$01
-	sta P0STATE
+	inc BRR_END_ADDR
+	dec BRR_REST_BYTES
+	bne @restBytesLoop
 
 @noRestBytes:
 	; brr転送終わり
