@@ -35,6 +35,12 @@
 .define BRR_END_ADDR $12
 .define BRR_REST_BYTES $14
 .define A_TEMP $15
+.define EVOLL_CUR $18
+.define EVOLL_TGT $19
+.define EVOLL_STEP $1a
+.define EVOLR_CUR $1b
+.define EVOLR_TGT $1c
+.define EVOLR_STEP $1d
 
 ;.define WAITSYNC_LSB $20
 ;.define WAITSYNC_MSB $30
@@ -198,6 +204,20 @@ restart:
 	cli
 	lda #$10
 	sta $4200
+	bra loop
+
+cntlcmd:
+; $80 xx xx yy: spc側xxxxにyyを書き込み
+; $90: 1シンク
+; $92 xx: 8bitシンク
+; $94 xx xx: 16bitシンク
+; $9e: END/LOOP
+; $a0-df: デフォルト値シンク
+	rep #$20			;3
+	and #$007e			;2
+	tax					;2
+	sep #$20			;3
+	jmp (cmdTable,x)	;6
 
 	; メインループ開始
 loop:
@@ -205,6 +225,41 @@ loop:
 	beq loop		;2
 	dey				;2
 	
+	; handle evol ramping
+	lda EVOLL_CUR
+	cmp EVOLL_TGT
+	beq +
+	clc
+	adc EVOLL_STEP
+	sta EVOLL_CUR
+	sta $2141
+	lda #$2c
+	sta $2142
+	lda P0STATE
+	sta $2140
+-
+	cmp $2140
+	bne -
+	eor #$01
+	sta P0STATE
+
++ lda EVOLR_CUR
+	cmp EVOLR_TGT
+	beq +
+	clc
+	adc EVOLR_STEP
+	sta EVOLR_CUR
+	sta $2141
+	lda #$3c
+	sta $2142
+	lda P0STATE
+	sta $2140
+-
+	cmp $2140
+	bne -
+	eor #$01
+	sta P0STATE
++
 	rep #$20		;3
 	dec WAIT_FRAMES	;5
 	sep #$20		;3
@@ -215,6 +270,42 @@ next:
 	; 負数ならwaitコマンド
 	bmi cntlcmd		;2
 	
+	; EVOL ランプ[ikari_01]
+	cmp #$2c
+	bne evolr
+	incAddr
+	lda [SEQ_PTR_LSB]
+	cmp EVOLL_CUR
+	sta EVOLL_TGT
+	bmi evoll_neg
+	lda #$01
+	sta EVOLL_STEP
+	incAddr
+	bra next
+evoll_neg:
+	lda #$ff
+	sta EVOLL_STEP
+	incAddr
+	bra next
+
+evolr:
+	cmp #$3c
+	bne regset00
+	incAddr
+	lda [SEQ_PTR_LSB]
+	cmp EVOLR_CUR
+	sta EVOLR_TGT
+	bmi evolr_neg
+	lda #$01
+	sta EVOLR_STEP
+	incAddr
+	bra next
+evolr_neg:
+	lda #$ff
+	sta EVOLR_STEP
+	incAddr
+	bra next
+
 regset00:
 	;DSPアドレス
 	sta $2142
@@ -237,20 +328,7 @@ regset00:
 	bne -
 	eor #$01
 	sta P0STATE
-	bra next
-	
-cntlcmd:
-; $80 xx xx yy: spc側xxxxにyyを書き込み
-; $90: 1シンク
-; $92 xx: 8bitシンク
-; $94 xx xx: 16bitシンク
-; $9e: END/LOOP
-; $a0-df: デフォルト値シンク
-	rep #$20			;3
-	and #$007e			;2
-	tax					;2
-	sep #$20			;3
-	jmp (cmdTable,x)	;6
+	jmp next
 	
 pitchSet:
 	; LSBアドレスを退避
@@ -762,6 +840,14 @@ spc_execute:
 
 initSound:
 	jsr spc_wait_boot
+	; init EVOL ramp [ikari_01]
+	stz EVOLL_TGT
+	stz EVOLL_CUR
+	stz EVOLL_STEP
+	stz EVOLR_TGT
+	stz EVOLR_CUR
+	stz EVOLR_STEP
+
 	; ノイズ回避のため音量を0に
 	lda	#$cc
 	sta P0STATE
