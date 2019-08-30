@@ -167,7 +167,7 @@ sync16bit:
 	mov a, [SEQ_PTR_LSB]+y
 	mov WAIT_FRAMES+1, a
 	incw SEQ_PTR_LSB
-	jmp loop
+	jmp !loop
 
 sync8bitx2:
 	mov x, #2
@@ -195,12 +195,12 @@ sync8bitxX:
 	mov WAIT_FRAMES+1, y
 	mov y, #0
 	incw SEQ_PTR_LSB
-	jmp loop
+	jmp !loop
 
 dataend:
 	mov SEQ_PTR_LSB, LOOP_PTR_LSB
 	mov SEQ_PTR_MSB, LOOP_PTR_MSB
-	jmp next
+	jmp !next
 
 syncVariable:
 	setc
@@ -211,16 +211,16 @@ syncVariable:
 	mov a, waittable+1+x
 	mov WAIT_FRAMES+1, a
 	incw SEQ_PTR_LSB
-	jmp loop
+	jmp !loop
 	
 wait1sync:
 	incw SEQ_PTR_LSB
 	mov WAIT_FRAMES, #1
 	mov WAIT_FRAMES+1, #0
-	jmp loop
+	jmp !loop
 	
 unknownCmd:
-	jmp next
+	jmp !next
 
 code_end:
 .ends

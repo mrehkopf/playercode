@@ -4,9 +4,9 @@ PROGNAME = $(shell basename $(CURDIR))
 EXTENS  = .spc
 TARGET  = $(PROGNAME)$(EXTENS)
 AS = wla-spc700
-ASFLAGS = -voi
+ASFLAGS = -v -i
 LD = wlalink
-LFLAGS = -vSi
+LFLAGS = -v -S -i
 INCDIR = .
 
 IFILES = defines.i

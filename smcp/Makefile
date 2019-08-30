@@ -2,9 +2,9 @@
 
 TARGET		:=	$(shell basename $(CURDIR))
 AS			= wla-65816
-ASFLAGS		= -voi
+ASFLAGS		= -v -i
 LD			= wlalink
-LFLAGS		= -vsi
+FLAGS		= -v -s -i
 SOURCES		:=	.
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
 

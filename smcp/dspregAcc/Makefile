@@ -4,9 +4,9 @@ PROGNAME = dspregAcc
 EXTENS  = .bin
 TARGET  = $(PROGNAME)$(EXTENS)
 AS = wla-spc700
-ASFLAGS = -voi
+ASFLAGS = -v -i
 LD = wlalink
-LFLAGS = -vbsi
+LFLAGS = -v -b -s -i
 INCDIR = .
 
 IFILES = defines.i

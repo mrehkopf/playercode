@@ -2,9 +2,9 @@
 
 TARGET		:=	$(shell basename $(CURDIR))
 AS			= wla-65816
-ASFLAGS		= -voi
+ASFLAGS		= -v -i
 LD			= wlalink
-LFLAGS		= -vbsi
+LFLAGS		= -v -b -s -i
 SOURCES		:=	.
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
 
@@ -25,8 +25,8 @@ $(SUBDIRS):
 spcp.bin:
 	echo [objects] > linkfile
 	echo spcp.o >> linkfile
-	wla-spc700 -vo spcp.asm spcp.o
-	wlalink -vb linkfile spcp.bin
+	wla-spc700 -v -o spcp.o spcp.asm
+	wlalink -v -b linkfile spcp.bin
 	
 $(TARGET): spcp.bin $(OFILES) Makefile
 	echo [objects] > linkfile
