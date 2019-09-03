@@ -242,8 +242,8 @@ loop:
 	bne -
 	eor #$01
 	sta P0STATE
-
-+ lda EVOLR_CUR
++
+	lda EVOLR_CUR
 	cmp EVOLR_TGT
 	beq +
 	clc
@@ -275,8 +275,12 @@ next:
 	bne evolr
 	incAddr
 	lda [SEQ_PTR_LSB]
-	cmp EVOLL_CUR
 	sta EVOLL_TGT
+	sec
+	sbc EVOLL_CUR
+	bvc evoll_cmp
+	eor #$80
+evoll_cmp:
 	bmi evoll_neg
 	lda #$01
 	sta EVOLL_STEP
@@ -293,8 +297,12 @@ evolr:
 	bne regset00
 	incAddr
 	lda [SEQ_PTR_LSB]
-	cmp EVOLR_CUR
 	sta EVOLR_TGT
+	sec
+	sbc EVOLR_CUR
+	bvc evolr_cmp
+	eor #$80
+evolr_cmp:
 	bmi evolr_neg
 	lda #$01
 	sta EVOLR_STEP
@@ -304,7 +312,7 @@ evolr_neg:
 	lda #$ff
 	sta EVOLR_STEP
 	incAddr
-	bra next
+	jmp next
 
 regset00:
 	;DSPアドレス
